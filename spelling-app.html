@@ -1,0 +1,2018 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SpellForge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0e1a;
+            --bg-card: #111827;
+            --bg-card-hover: #1a2235;
+            --accent: #22d3ee;
+            --accent-glow: rgba(34, 211, 238, 0.3);
+            --accent-2: #a78bfa;
+            --accent-3: #34d399;
+            --accent-4: #fb923c;
+            --text: #e2e8f0;
+            --text-dim: #64748b;
+            --text-bright: #f8fafc;
+            --border: #1e293b;
+            --danger: #f87171;
+            --success: #34d399;
+            --warning: #fbbf24;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+        }
+
+        /* Subtle animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                radial-gradient(ellipse at 20% 50%, rgba(34, 211, 238, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(167, 139, 250, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(52, 211, 153, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app {
+            position: relative;
+            z-index: 1;
+            max-width: 520px;
+            margin: 0 auto;
+            padding: 12px;
+            min-height: 100vh;
+            min-height: 100dvh;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 16px 0 12px;
+        }
+
+        .logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 2em;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+        }
+
+        .logo span {
+            -webkit-text-fill-color: var(--accent-2);
+        }
+
+        .streak-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 8px;
+            font-size: 0.85em;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .streak-bar .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .streak-bar .stat-icon {
+            font-size: 1.1em;
+        }
+
+        .streak-bar .stat-val {
+            color: var(--text);
+            font-weight: 700;
+            font-family: 'Space Mono', monospace;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+            font-weight: 600;
+        }
+
+        /* Navigation tabs */
+        .nav {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 4px;
+            margin-bottom: 12px;
+        }
+
+        .nav-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82em;
+            font-weight: 600;
+            padding: 10px 6px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .nav-btn .nav-icon {
+            font-size: 1.3em;
+        }
+
+        .nav-btn.active {
+            background: var(--accent);
+            color: var(--bg-dark);
+        }
+
+        .nav-btn:not(.active):active {
+            background: var(--bg-card-hover);
+        }
+
+        /* Screens */
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        /* Mode selector grid */
+        .mode-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .mode-card {
+            background: var(--bg-card-hover);
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .mode-card:active {
+            transform: scale(0.96);
+        }
+
+        .mode-card.selected {
+            border-color: var(--accent);
+            background: rgba(34, 211, 238, 0.08);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .mode-card .mode-icon {
+            font-size: 1.8em;
+            margin-bottom: 6px;
+        }
+
+        .mode-card .mode-name {
+            font-weight: 700;
+            font-size: 0.9em;
+            color: var(--text-bright);
+        }
+
+        .mode-card .mode-desc {
+            font-size: 0.72em;
+            color: var(--text-dim);
+            margin-top: 3px;
+        }
+
+        /* Game area */
+        .game-display {
+            background: var(--bg-dark);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 28px 16px;
+            text-align: center;
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-display::before {
+            content: '';
+            position: absolute;
+            top: -1px; left: -1px; right: -1px; bottom: -1px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2), var(--accent-3));
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 0;
+        }
+
+        .game-display.glow::before {
+            opacity: 0.6;
+        }
+
+        .game-display > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .display-word {
+            font-family: 'Space Mono', monospace;
+            font-size: 2.2em;
+            font-weight: 700;
+            color: var(--text-bright);
+            letter-spacing: 3px;
+        }
+
+        .display-hint {
+            font-size: 0.9em;
+            color: var(--text-dim);
+            margin-top: 6px;
+        }
+
+        .display-definition {
+            font-size: 0.82em;
+            color: var(--accent-2);
+            margin-top: 8px;
+            font-style: italic;
+            max-width: 90%;
+        }
+
+        .display-sentence {
+            font-size: 0.78em;
+            color: var(--text-dim);
+            margin-top: 4px;
+            max-width: 90%;
+        }
+
+        .scramble-letters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .scramble-letter {
+            background: var(--accent);
+            color: var(--bg-dark);
+            font-family: 'Space Mono', monospace;
+            font-size: 1.5em;
+            font-weight: 700;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+            user-select: none;
+        }
+
+        .scramble-letter:active {
+            transform: scale(0.9);
+        }
+
+        .scramble-letter.used {
+            opacity: 0.2;
+            pointer-events: none;
+        }
+
+        .scramble-answer {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            margin-bottom: 12px;
+            min-height: 46px;
+            flex-wrap: wrap;
+        }
+
+        .scramble-slot {
+            width: 38px;
+            height: 42px;
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Mono', monospace;
+            font-size: 1.4em;
+            font-weight: 700;
+            color: var(--accent);
+            cursor: pointer;
+        }
+
+        .scramble-slot.filled {
+            border-color: var(--accent);
+            background: rgba(34, 211, 238, 0.1);
+        }
+
+        /* Input */
+        .input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .spell-input {
+            flex: 1;
+            background: var(--bg-dark);
+            border: 2px solid var(--border);
+            color: var(--text-bright);
+            font-family: 'Space Mono', monospace;
+            font-size: 1.2em;
+            font-weight: 700;
+            padding: 14px 16px;
+            border-radius: 12px;
+            outline: none;
+            text-align: center;
+            letter-spacing: 2px;
+            -webkit-appearance: none;
+        }
+
+        .spell-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .spell-input::placeholder {
+            color: var(--text-dim);
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 500;
+            font-size: 0.8em;
+            letter-spacing: 0;
+        }
+
+        /* Buttons */
+        .btn {
+            border: none;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.15s;
+            -webkit-appearance: none;
+            font-size: 0.95em;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg-dark);
+            padding: 14px 24px;
+        }
+
+        .btn-secondary {
+            background: var(--bg-card-hover);
+            color: var(--text);
+            padding: 14px 20px;
+            border: 1px solid var(--border);
+        }
+
+        .btn-icon {
+            background: var(--bg-card-hover);
+            color: var(--text);
+            padding: 14px;
+            border: 1px solid var(--border);
+            font-size: 1.2em;
+            min-width: 50px;
+        }
+
+        .btn-sm {
+            padding: 8px 14px;
+            font-size: 0.82em;
+            border-radius: 8px;
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--danger);
+            padding: 8px 14px;
+            border: 1px solid rgba(248, 113, 113, 0.3);
+        }
+
+        .action-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-row .btn {
+            flex: 1;
+        }
+
+        /* Feedback */
+        .feedback {
+            text-align: center;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1em;
+            margin-bottom: 8px;
+        }
+
+        .feedback.correct {
+            color: var(--success);
+        }
+
+        .feedback.incorrect {
+            color: var(--danger);
+        }
+
+        .feedback.info {
+            color: var(--accent);
+        }
+
+        /* Timer bar */
+        .timer-container {
+            margin-bottom: 14px;
+        }
+
+        .timer-bar-bg {
+            background: var(--bg-dark);
+            border-radius: 6px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .timer-bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            transition: width 0.1s linear;
+        }
+
+        .timer-bar-fill.danger {
+            background: linear-gradient(90deg, var(--danger), var(--warning));
+        }
+
+        .timer-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75em;
+            color: var(--text-dim);
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        /* Progress section */
+        .progress-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 6px;
+        }
+
+        .word-chip {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 6px;
+            text-align: center;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75em;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .word-chip .mastery-dots {
+            display: flex;
+            gap: 3px;
+            justify-content: center;
+            margin-top: 4px;
+        }
+
+        .mastery-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--border);
+        }
+
+        .mastery-dot.filled {
+            background: var(--accent);
+        }
+
+        .word-chip.mastered {
+            border-color: var(--success);
+            background: rgba(52, 211, 153, 0.08);
+        }
+
+        .word-chip.mastered .mastery-dot.filled {
+            background: var(--success);
+        }
+
+        /* Word management */
+        .word-list-editor {
+            width: 100%;
+        }
+
+        .word-input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .word-text-input {
+            flex: 1;
+            background: var(--bg-dark);
+            border: 2px solid var(--border);
+            color: var(--text-bright);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95em;
+            font-weight: 500;
+            padding: 12px 14px;
+            border-radius: 10px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .word-text-input:focus {
+            border-color: var(--accent);
+        }
+
+        .word-text-input::placeholder {
+            color: var(--text-dim);
+        }
+
+        .current-words {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .editable-chip {
+            background: var(--bg-card-hover);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text);
+        }
+
+        .editable-chip .remove-word {
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 1.1em;
+            line-height: 1;
+            opacity: 0.6;
+        }
+
+        .editable-chip .remove-word:hover {
+            opacity: 1;
+        }
+
+        /* Test results */
+        .test-results {
+            text-align: center;
+        }
+
+        .test-score-big {
+            font-family: 'Syne', sans-serif;
+            font-size: 3em;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .test-score-label {
+            color: var(--text-dim);
+            font-size: 0.9em;
+            margin-bottom: 16px;
+        }
+
+        .test-word-result {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            font-size: 0.9em;
+        }
+
+        .test-word-result.pass {
+            background: rgba(52, 211, 153, 0.1);
+        }
+
+        .test-word-result.fail {
+            background: rgba(248, 113, 113, 0.1);
+        }
+
+        .test-word-result .word-col {
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+        }
+
+        .test-word-result .typed-col {
+            color: var(--text-dim);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85em;
+        }
+
+        .test-word-result .result-icon {
+            font-size: 1.2em;
+        }
+
+        /* Week label */
+        .week-label {
+            display: inline-block;
+            background: rgba(167, 139, 250, 0.15);
+            color: var(--accent-2);
+            font-size: 0.72em;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Animations */
+        @keyframes correctPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        .anim-correct {
+            animation: correctPulse 0.4s ease-out;
+        }
+
+        .anim-incorrect {
+            animation: shake 0.3s ease-out;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-up {
+            animation: fadeUp 0.3s ease-out;
+        }
+
+        /* Disappearing mode countdown */
+        .countdown-ring {
+            font-family: 'Space Mono', monospace;
+            font-size: 2.5em;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        /* Summary stats row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .stat-box {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 8px;
+            text-align: center;
+        }
+
+        .stat-box .stat-number {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.3em;
+            font-weight: 700;
+            color: var(--text-bright);
+        }
+
+        .stat-box .stat-label {
+            font-size: 0.65em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        /* Utility */
+        .hidden { display: none !important; }
+        .mt-8 { margin-top: 8px; }
+        .mt-12 { margin-top: 12px; }
+        .mb-8 { margin-bottom: 8px; }
+        .text-center { text-align: center; }
+        .text-dim { color: var(--text-dim); }
+        .text-sm { font-size: 0.82em; }
+
+        /* Scrollable area */
+        .scroll-area {
+            max-height: 300px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        /* Learn mode definition card */
+        .learn-card {
+            background: var(--bg-card-hover);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 10px;
+        }
+
+        .learn-word {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.6em;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+
+        .learn-def {
+            font-size: 0.88em;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .learn-sentence {
+            font-size: 0.82em;
+            color: var(--text-dim);
+            font-style: italic;
+        }
+
+        .learn-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .learn-counter {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8em;
+            color: var(--text-dim);
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-dim);
+        }
+
+        .empty-state .empty-icon {
+            font-size: 2.5em;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="app" id="app"></div>
+
+    <script>
+    // =========================================================================
+    // SpellForge — Year 5 Spelling App
+    // =========================================================================
+
+    const APP_KEY = 'spellforge_y5';
+
+    // ---- State ----
+    let state = {
+        words: [],           // [{word, definition?, sentence?}]
+        weekLabel: '',
+        mastery: {},         // {word: {correct: 0, attempts: 0, streak: 0, lastSeen: timestamp}}
+        dailyStreak: 0,
+        lastPracticeDate: null,
+        totalCorrect: 0,
+        totalAttempts: 0
+    };
+
+    let gameState = {
+        screen: 'practice',  // practice | words | progress
+        mode: 'listen',      // listen | disappear | scramble | speed | test | learn
+        currentWord: null,
+        currentWordObj: null,
+        input: '',
+        feedback: null,      // {type: 'correct'|'incorrect'|'info', text}
+        gameActive: false,
+        // Scramble state
+        scrambleLetters: [],
+        scrambleAnswer: [],
+        scrambleUsed: [],
+        // Speed round
+        speedTimeLeft: 0,
+        speedTimer: null,
+        speedScore: 0,
+        speedTotal: 0,
+        // Test mode
+        testWords: [],
+        testIndex: 0,
+        testAnswers: [],
+        testActive: false,
+        // Disappear
+        disappearPhase: 'showing', // showing | countdown | hidden
+        disappearTimer: null,
+        // Learn
+        learnIndex: 0
+    };
+
+    // ---- Persistence ----
+    function save() {
+        try {
+            localStorage.setItem(APP_KEY, JSON.stringify(state));
+        } catch(e) {}
+    }
+
+    function load() {
+        try {
+            const data = localStorage.getItem(APP_KEY);
+            if (data) {
+                const parsed = JSON.parse(data);
+                state = { ...state, ...parsed };
+            }
+        } catch(e) {}
+        updateStreak();
+    }
+
+    function updateStreak() {
+        const today = new Date().toDateString();
+        if (state.lastPracticeDate === today) return;
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
+        if (state.lastPracticeDate === yesterday) {
+            // streak continues
+        } else if (state.lastPracticeDate !== today) {
+            state.dailyStreak = 0;
+        }
+    }
+
+    function recordPractice() {
+        const today = new Date().toDateString();
+        if (state.lastPracticeDate !== today) {
+            const yesterday = new Date(Date.now() - 86400000).toDateString();
+            if (state.lastPracticeDate === yesterday || state.lastPracticeDate === today) {
+                state.dailyStreak++;
+            } else {
+                state.dailyStreak = 1;
+            }
+            state.lastPracticeDate = today;
+        }
+        save();
+    }
+
+    // ---- Speech Synthesis (British voice) ----
+    let britishVoice = null;
+
+    function loadVoices() {
+        const voices = speechSynthesis.getVoices();
+        // Prefer UK English voices
+        britishVoice = voices.find(v => v.lang === 'en-GB' && v.name.toLowerCase().includes('female')) ||
+                       voices.find(v => v.lang === 'en-GB') ||
+                       voices.find(v => v.lang.startsWith('en'));
+    }
+
+    speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
+
+    function speak(text, rate = 0.85) {
+        speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'en-GB';
+        utter.rate = rate;
+        utter.pitch = 1;
+        if (britishVoice) utter.voice = britishVoice;
+        speechSynthesis.speak(utter);
+    }
+
+    function speakWord(word) {
+        speak(word, 0.8);
+    }
+
+    function speakSentence(sentence) {
+        speak(sentence, 0.9);
+    }
+
+    // ---- Word Management ----
+    function addWord(word, definition = '', sentence = '') {
+        word = word.trim().toLowerCase();
+        if (!word) return false;
+        if (state.words.find(w => w.word === word)) return false;
+        state.words.push({ word, definition: definition.trim(), sentence: sentence.trim() });
+        if (!state.mastery[word]) {
+            state.mastery[word] = { correct: 0, attempts: 0, streak: 0, lastSeen: 0 };
+        }
+        save();
+        return true;
+    }
+
+    function removeWord(word) {
+        state.words = state.words.filter(w => w.word !== word);
+        delete state.mastery[word];
+        save();
+    }
+
+    function getWordObj(word) {
+        return state.words.find(w => w.word === word) || { word, definition: '', sentence: '' };
+    }
+
+    function getMastery(word) {
+        if (!state.mastery[word]) state.mastery[word] = { correct: 0, attempts: 0, streak: 0, lastSeen: 0 };
+        return state.mastery[word];
+    }
+
+    function isMastered(word) {
+        return getMastery(word).correct >= 3;
+    }
+
+    function getMasteredCount() {
+        return state.words.filter(w => isMastered(w.word)).length;
+    }
+
+    function getActiveWords() {
+        return state.words.filter(w => !isMastered(w.word));
+    }
+
+    // Spaced repetition: pick words weighted by difficulty
+    function pickWord() {
+        const active = getActiveWords();
+        if (active.length === 0) return state.words.length > 0 ? state.words[Math.floor(Math.random() * state.words.length)] : null;
+
+        const weighted = [];
+        active.forEach(w => {
+            const m = getMastery(w.word);
+            // Words with more mistakes get higher weight
+            const errorWeight = Math.max(1, (m.attempts - m.correct) * 2 + 1);
+            // Words not seen recently get boost
+            const recencyBoost = m.lastSeen === 0 ? 2 : (Date.now() - m.lastSeen > 300000 ? 1.5 : 1);
+            const weight = Math.round(errorWeight * recencyBoost);
+            for (let i = 0; i < weight; i++) weighted.push(w);
+        });
+
+        return weighted[Math.floor(Math.random() * weighted.length)];
+    }
+
+    function recordAnswer(word, correct) {
+        const m = getMastery(word);
+        m.attempts++;
+        state.totalAttempts++;
+        m.lastSeen = Date.now();
+        if (correct) {
+            m.correct++;
+            m.streak++;
+            state.totalCorrect++;
+        } else {
+            m.streak = 0;
+            // Penalise: reduce correct count if > 0
+            if (m.correct > 0) m.correct--;
+        }
+        recordPractice();
+        save();
+    }
+
+    // ---- Scramble Helpers ----
+    function shuffleArray(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    function initScramble(word) {
+        let letters = word.split('');
+        let shuffled = shuffleArray(letters);
+        // Ensure it's actually shuffled
+        let tries = 0;
+        while (shuffled.join('') === word && tries < 10) {
+            shuffled = shuffleArray(letters);
+            tries++;
+        }
+        gameState.scrambleLetters = shuffled;
+        gameState.scrambleAnswer = new Array(word.length).fill(null);
+        gameState.scrambleUsed = new Array(shuffled.length).fill(false);
+    }
+
+    // ---- Rendering ----
+    function render() {
+        const app = document.getElementById('app');
+        app.innerHTML = `
+            ${renderHeader()}
+            ${renderNav()}
+            ${renderScreen()}
+        `;
+        attachEvents();
+    }
+
+    function renderHeader() {
+        return `
+            <div class="header">
+                <div class="logo">Spell<span>Forge</span></div>
+                <div class="streak-bar">
+                    <div class="stat">
+                        <span class="stat-icon">🔥</span>
+                        <span class="stat-val">${state.dailyStreak}</span> day${state.dailyStreak !== 1 ? 's' : ''}
+                    </div>
+                    <div class="stat">
+                        <span class="stat-icon">✅</span>
+                        <span class="stat-val">${getMasteredCount()}</span>/${state.words.length}
+                    </div>
+                    ${state.weekLabel ? `<span class="week-label">${state.weekLabel}</span>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderNav() {
+        const tabs = [
+            { id: 'practice', icon: '⚡', label: 'Practice' },
+            { id: 'words', icon: '📝', label: 'Words' },
+            { id: 'progress', icon: '📊', label: 'Progress' }
+        ];
+        return `
+            <div class="nav">
+                ${tabs.map(t => `
+                    <button class="nav-btn ${gameState.screen === t.id ? 'active' : ''}" data-nav="${t.id}">
+                        <span class="nav-icon">${t.icon}</span>
+                        ${t.label}
+                    </button>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function renderScreen() {
+        if (state.words.length === 0 && gameState.screen === 'practice') {
+            return `
+                <div class="screen active">
+                    <div class="empty-state">
+                        <div class="empty-icon">📝</div>
+                        <p>No words yet! Tap <strong>Words</strong> to add this week's spelling list.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        switch (gameState.screen) {
+            case 'practice': return `<div class="screen active">${renderPractice()}</div>`;
+            case 'words': return `<div class="screen active">${renderWords()}</div>`;
+            case 'progress': return `<div class="screen active">${renderProgress()}</div>`;
+        }
+    }
+
+    // ---- Practice Screen ----
+    function renderPractice() {
+        const modes = [
+            { id: 'listen', icon: '👂', name: 'Listen & Spell', desc: 'Hear it, spell it' },
+            { id: 'disappear', icon: '👻', name: 'Disappearing', desc: 'Remember before it vanishes' },
+            { id: 'scramble', icon: '🔀', name: 'Unscramble', desc: 'Rearrange the letters' },
+            { id: 'speed', icon: '⏱️', name: 'Speed Round', desc: '60 second challenge' },
+            { id: 'test', icon: '📋', name: 'Spelling Test', desc: 'Full list test' },
+            { id: 'learn', icon: '📖', name: 'Learn', desc: 'Study words & meanings' }
+        ];
+
+        let content = `
+            <div class="mode-grid">
+                ${modes.map(m => `
+                    <div class="mode-card ${gameState.mode === m.id ? 'selected' : ''}" data-mode="${m.id}">
+                        <div class="mode-icon">${m.icon}</div>
+                        <div class="mode-name">${m.name}</div>
+                        <div class="mode-desc">${m.desc}</div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        // Render the active mode
+        switch (gameState.mode) {
+            case 'listen': content += renderListenMode(); break;
+            case 'disappear': content += renderDisappearMode(); break;
+            case 'scramble': content += renderScrambleMode(); break;
+            case 'speed': content += renderSpeedMode(); break;
+            case 'test': content += renderTestMode(); break;
+            case 'learn': content += renderLearnMode(); break;
+        }
+
+        return content;
+    }
+
+    function renderListenMode() {
+        if (!gameState.currentWord) return `
+            <div class="card">
+                <div class="text-center">
+                    <button class="btn btn-primary" data-action="startListen">Start Practising</button>
+                </div>
+            </div>
+        `;
+
+        const wo = gameState.currentWordObj;
+        return `
+            <div class="card">
+                <div class="game-display ${gameState.feedback?.type === 'correct' ? 'glow' : ''}">
+                    <div class="display-word">👂</div>
+                    <div class="display-hint">Listen and type the word</div>
+                    ${wo.definition ? `<div class="display-definition">${wo.definition}</div>` : ''}
+                    ${wo.sentence ? `<div class="display-sentence">"${wo.sentence}"</div>` : ''}
+                </div>
+                <div class="input-row">
+                    <button class="btn btn-icon" data-action="replay" title="Listen again">🔊</button>
+                    <input class="spell-input" id="spellInput" type="text" placeholder="Type spelling here..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" value="${gameState.input}">
+                </div>
+                <div class="feedback ${gameState.feedback?.type || ''}">${gameState.feedback?.text || ''}</div>
+                <div class="action-row">
+                    <button class="btn btn-secondary" data-action="skipWord">Skip</button>
+                    <button class="btn btn-primary" data-action="checkAnswer">Check</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderDisappearMode() {
+        if (!gameState.currentWord) return `
+            <div class="card">
+                <div class="text-center">
+                    <button class="btn btn-primary" data-action="startDisappear">Start Practising</button>
+                </div>
+            </div>
+        `;
+
+        let displayContent;
+        if (gameState.disappearPhase === 'showing') {
+            displayContent = `
+                <div class="display-word">${gameState.currentWord}</div>
+                <div class="display-hint">Memorise this word...</div>
+            `;
+        } else if (gameState.disappearPhase === 'countdown') {
+            displayContent = `
+                <div class="countdown-ring" id="countdownNum"></div>
+                <div class="display-hint">Disappearing...</div>
+            `;
+        } else {
+            displayContent = `
+                <div class="display-word">❓</div>
+                <div class="display-hint">What was the word?</div>
+            `;
+        }
+
+        return `
+            <div class="card">
+                <div class="game-display ${gameState.feedback?.type === 'correct' ? 'glow' : ''}">
+                    ${displayContent}
+                </div>
+                ${gameState.disappearPhase === 'hidden' ? `
+                    <div class="input-row">
+                        <input class="spell-input" id="spellInput" type="text" placeholder="Type the word..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" value="${gameState.input}">
+                    </div>
+                    <div class="feedback ${gameState.feedback?.type || ''}">${gameState.feedback?.text || ''}</div>
+                    <div class="action-row">
+                        <button class="btn btn-secondary" data-action="peekWord">Peek</button>
+                        <button class="btn btn-primary" data-action="checkAnswer">Check</button>
+                    </div>
+                ` : `
+                    <div class="text-center text-dim text-sm">Get ready to type...</div>
+                `}
+            </div>
+        `;
+    }
+
+    function renderScrambleMode() {
+        if (!gameState.currentWord) return `
+            <div class="card">
+                <div class="text-center">
+                    <button class="btn btn-primary" data-action="startScramble">Start Practising</button>
+                </div>
+            </div>
+        `;
+
+        const wo = gameState.currentWordObj;
+        return `
+            <div class="card">
+                ${wo.definition ? `<div class="text-center text-dim text-sm mb-8"><em>${wo.definition}</em></div>` : ''}
+                <div class="game-display ${gameState.feedback?.type === 'correct' ? 'glow' : ''}">
+                    <div class="scramble-answer">
+                        ${gameState.scrambleAnswer.map((letter, i) => `
+                            <div class="scramble-slot ${letter ? 'filled' : ''}" data-slot="${i}">
+                                ${letter || ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="scramble-letters">
+                        ${gameState.scrambleLetters.map((letter, i) => `
+                            <div class="scramble-letter ${gameState.scrambleUsed[i] ? 'used' : ''}" data-letter-idx="${i}">
+                                ${letter.toUpperCase()}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="feedback ${gameState.feedback?.type || ''}">${gameState.feedback?.text || ''}</div>
+                <div class="action-row">
+                    <button class="btn btn-secondary" data-action="clearScramble">Clear</button>
+                    <button class="btn btn-icon" data-action="replay">🔊</button>
+                    <button class="btn btn-secondary" data-action="skipWord">Skip</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderSpeedMode() {
+        if (!gameState.gameActive) {
+            return `
+                <div class="card">
+                    ${gameState.speedTotal > 0 ? `
+                        <div class="test-results fade-up">
+                            <div class="test-score-big">${gameState.speedScore}</div>
+                            <div class="test-score-label">words in 60 seconds</div>
+                        </div>
+                    ` : `
+                        <div class="text-center">
+                            <p class="text-dim mb-8">Spell as many words as you can in 60 seconds!</p>
+                        </div>
+                    `}
+                    <div class="text-center mt-8">
+                        <button class="btn btn-primary" data-action="startSpeed">${gameState.speedTotal > 0 ? 'Play Again' : 'Start'}</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        const pct = (gameState.speedTimeLeft / 60) * 100;
+        return `
+            <div class="card">
+                <div class="timer-container">
+                    <div class="timer-bar-bg">
+                        <div class="timer-bar-fill ${pct < 25 ? 'danger' : ''}" style="width: ${pct}%"></div>
+                    </div>
+                    <div class="timer-label">${gameState.speedTimeLeft}s · ${gameState.speedScore} correct</div>
+                </div>
+                <div class="game-display">
+                    <div class="display-word">👂</div>
+                    <div class="display-hint">Quick — spell it!</div>
+                </div>
+                <div class="input-row">
+                    <button class="btn btn-icon" data-action="replay">🔊</button>
+                    <input class="spell-input" id="spellInput" type="text" placeholder="Type fast!" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" value="${gameState.input}">
+                </div>
+                <div class="feedback ${gameState.feedback?.type || ''}">${gameState.feedback?.text || ''}</div>
+                <div class="text-center">
+                    <button class="btn btn-primary" data-action="checkAnswer">Check</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderTestMode() {
+        if (gameState.testActive && gameState.testIndex >= gameState.testWords.length) {
+            // Show results
+            const score = gameState.testAnswers.filter(a => a.correct).length;
+            return `
+                <div class="card">
+                    <div class="test-results fade-up">
+                        <div class="test-score-big">${score}/${gameState.testWords.length}</div>
+                        <div class="test-score-label">Spelling Test Complete</div>
+                        <div class="scroll-area mt-12">
+                            ${gameState.testAnswers.map(a => `
+                                <div class="test-word-result ${a.correct ? 'pass' : 'fail'}">
+                                    <span class="word-col">${a.word}</span>
+                                    ${!a.correct ? `<span class="typed-col">${a.typed || '(skipped)'}</span>` : ''}
+                                    <span class="result-icon">${a.correct ? '✅' : '❌'}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="action-row mt-12">
+                        <button class="btn btn-secondary" data-action="resetTest">New Test</button>
+                        <button class="btn btn-primary" data-action="retestFailed">Retry Mistakes</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (!gameState.testActive) return `
+            <div class="card">
+                <div class="text-center">
+                    <p class="text-dim mb-8">A full spelling test — each word is read out once. Just like in class!</p>
+                    <button class="btn btn-primary" data-action="startTest">Start Test</button>
+                </div>
+            </div>
+        `;
+
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Word ${gameState.testIndex + 1} of ${gameState.testWords.length}</span>
+                    <button class="btn btn-sm btn-icon" data-action="replay">🔊</button>
+                </div>
+                <div class="game-display">
+                    <div class="display-word">📋</div>
+                    <div class="display-hint">Spelling test — listen carefully</div>
+                </div>
+                <div class="input-row">
+                    <input class="spell-input" id="spellInput" type="text" placeholder="Spell the word..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" value="${gameState.input}">
+                </div>
+                <div class="action-row">
+                    <button class="btn btn-secondary" data-action="skipTest">Skip</button>
+                    <button class="btn btn-primary" data-action="submitTest">Next</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderLearnMode() {
+        if (state.words.length === 0) return `<div class="card"><div class="empty-state"><p>Add some words first!</p></div></div>`;
+
+        const idx = gameState.learnIndex % state.words.length;
+        const wo = state.words[idx];
+
+        return `
+            <div class="card fade-up">
+                <div class="learn-card">
+                    <div class="learn-word">${wo.word}</div>
+                    ${wo.definition ? `<div class="learn-def">${wo.definition}</div>` : '<div class="learn-def text-dim">No definition added</div>'}
+                    ${wo.sentence ? `<div class="learn-sentence">"${wo.sentence}"</div>` : ''}
+                </div>
+                <div class="action-row">
+                    <button class="btn btn-icon" data-action="speakLearn">🔊</button>
+                    <button class="btn btn-secondary" data-action="speakSentenceLearn">Hear Sentence</button>
+                </div>
+                <div class="learn-nav mt-8">
+                    <button class="btn btn-sm btn-secondary" data-action="learnPrev">← Prev</button>
+                    <span class="learn-counter">${idx + 1} / ${state.words.length}</span>
+                    <button class="btn btn-sm btn-primary" data-action="learnNext">Next →</button>
+                </div>
+            </div>
+        `;
+    }
+
+    // ---- Words Screen ----
+    function renderWords() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Week Label</span>
+                </div>
+                <div class="word-input-row">
+                    <input class="word-text-input" id="weekLabelInput" type="text" placeholder="e.g. Week 12 — Silent Letters" value="${state.weekLabel}">
+                    <button class="btn btn-sm btn-primary" data-action="saveWeekLabel">Save</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Add Words</span>
+                </div>
+                <div class="word-input-row">
+                    <input class="word-text-input" id="newWordInput" type="text" placeholder="Type a word...">
+                    <button class="btn btn-sm btn-primary" data-action="addSingleWord">Add</button>
+                </div>
+                <div class="word-input-row">
+                    <input class="word-text-input" id="newDefInput" type="text" placeholder="Definition (optional)">
+                </div>
+                <div class="word-input-row">
+                    <input class="word-text-input" id="newSentInput" type="text" placeholder="Example sentence (optional)">
+                </div>
+                <p class="text-dim text-sm mt-8">Or paste multiple words separated by commas:</p>
+                <div class="word-input-row mt-8">
+                    <input class="word-text-input" id="bulkWordsInput" type="text" placeholder="word1, word2, word3...">
+                    <button class="btn btn-sm btn-primary" data-action="addBulkWords">Add All</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Current Words (${state.words.length})</span>
+                    ${state.words.length > 0 ? `<button class="btn btn-sm btn-danger" data-action="clearAllWords">Clear All</button>` : ''}
+                </div>
+                ${state.words.length === 0 ? `
+                    <div class="text-center text-dim text-sm">No words added yet</div>
+                ` : `
+                    <div class="current-words">
+                        ${state.words.map(w => `
+                            <div class="editable-chip">
+                                ${w.word}
+                                <span class="remove-word" data-remove="${w.word}">✕</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `}
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Manage</span>
+                </div>
+                <div class="action-row">
+                    <button class="btn btn-sm btn-secondary" data-action="resetMastery">Reset Progress</button>
+                </div>
+            </div>
+        `;
+    }
+
+    // ---- Progress Screen ----
+    function renderProgress() {
+        const accuracy = state.totalAttempts > 0 ? Math.round((state.totalCorrect / state.totalAttempts) * 100) : 0;
+        return `
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="stat-number">${getMasteredCount()}</div>
+                    <div class="stat-label">Mastered</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">${accuracy}%</div>
+                    <div class="stat-label">Accuracy</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">${state.dailyStreak}</div>
+                    <div class="stat-label">Streak</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Word Progress</span>
+                </div>
+                ${state.words.length === 0 ? `
+                    <div class="text-center text-dim text-sm">Add words to track progress</div>
+                ` : `
+                    <div class="progress-grid">
+                        ${state.words.map(w => {
+                            const m = getMastery(w.word);
+                            const mastered = m.correct >= 3;
+                            return `
+                                <div class="word-chip ${mastered ? 'mastered' : ''}">
+                                    ${w.word}
+                                    <div class="mastery-dots">
+                                        ${[0,1,2].map(i => `<div class="mastery-dot ${i < m.correct ? 'filled' : ''}"></div>`).join('')}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `}
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Tricky Words</span>
+                </div>
+                ${(() => {
+                    const tricky = state.words
+                        .filter(w => getMastery(w.word).attempts > 0)
+                        .sort((a, b) => {
+                            const ma = getMastery(a.word), mb = getMastery(b.word);
+                            const ra = ma.attempts > 0 ? ma.correct / ma.attempts : 1;
+                            const rb = mb.attempts > 0 ? mb.correct / mb.attempts : 1;
+                            return ra - rb;
+                        })
+                        .slice(0, 5);
+                    if (tricky.length === 0) return '<div class="text-center text-dim text-sm">Practice some words first</div>';
+                    return tricky.map(w => {
+                        const m = getMastery(w.word);
+                        const pct = m.attempts > 0 ? Math.round((m.correct / m.attempts) * 100) : 0;
+                        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">
+                            <span style="font-family:'Space Mono',monospace;font-weight:700;font-size:0.9em">${w.word}</span>
+                            <span style="font-size:0.8em;color:var(--text-dim)">${pct}% (${m.correct}/${m.attempts})</span>
+                        </div>`;
+                    }).join('');
+                })()}
+            </div>
+        `;
+    }
+
+    // ---- Event Handling ----
+    function attachEvents() {
+        // Nav
+        document.querySelectorAll('[data-nav]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                gameState.screen = btn.dataset.nav;
+                stopAllTimers();
+                render();
+            });
+        });
+
+        // Mode select
+        document.querySelectorAll('[data-mode]').forEach(card => {
+            card.addEventListener('click', () => {
+                gameState.mode = card.dataset.mode;
+                gameState.currentWord = null;
+                gameState.feedback = null;
+                gameState.input = '';
+                gameState.gameActive = false;
+                gameState.testActive = false;
+                stopAllTimers();
+                render();
+            });
+        });
+
+        // Actions
+        document.querySelectorAll('[data-action]').forEach(btn => {
+            btn.addEventListener('click', () => handleAction(btn.dataset.action));
+        });
+
+        // Remove word
+        document.querySelectorAll('[data-remove]').forEach(el => {
+            el.addEventListener('click', () => {
+                removeWord(el.dataset.remove);
+                render();
+            });
+        });
+
+        // Input tracking
+        const spellInput = document.getElementById('spellInput');
+        if (spellInput) {
+            spellInput.addEventListener('input', (e) => {
+                gameState.input = e.target.value;
+            });
+            spellInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    if (gameState.testActive) handleAction('submitTest');
+                    else handleAction('checkAnswer');
+                }
+            });
+            // Auto-focus
+            setTimeout(() => spellInput.focus(), 50);
+        }
+
+        // Scramble letter taps
+        document.querySelectorAll('[data-letter-idx]').forEach(el => {
+            el.addEventListener('click', () => {
+                const idx = parseInt(el.dataset.letterIdx);
+                if (gameState.scrambleUsed[idx]) return;
+                // Find first empty slot
+                const slotIdx = gameState.scrambleAnswer.indexOf(null);
+                if (slotIdx === -1) return;
+                gameState.scrambleAnswer[slotIdx] = gameState.scrambleLetters[idx];
+                gameState.scrambleUsed[idx] = true;
+                // Check if complete
+                if (!gameState.scrambleAnswer.includes(null)) {
+                    const attempt = gameState.scrambleAnswer.join('');
+                    if (attempt === gameState.currentWord) {
+                        gameState.feedback = { type: 'correct', text: getCorrectMessage() };
+                        recordAnswer(gameState.currentWord, true);
+                        setTimeout(() => nextGameWord(), 1500);
+                    } else {
+                        gameState.feedback = { type: 'incorrect', text: `Not quite — it's "${gameState.currentWord}"` };
+                        recordAnswer(gameState.currentWord, false);
+                        setTimeout(() => nextGameWord(), 2000);
+                    }
+                }
+                render();
+            });
+        });
+
+        // Scramble slot taps (to remove)
+        document.querySelectorAll('[data-slot]').forEach(el => {
+            el.addEventListener('click', () => {
+                const slotIdx = parseInt(el.dataset.slot);
+                const letter = gameState.scrambleAnswer[slotIdx];
+                if (!letter) return;
+                // Find the original letter index to un-use
+                const letterIdx = gameState.scrambleLetters.findIndex((l, i) => l === letter && gameState.scrambleUsed[i]);
+                if (letterIdx !== -1) gameState.scrambleUsed[letterIdx] = false;
+                gameState.scrambleAnswer[slotIdx] = null;
+                render();
+            });
+        });
+
+        // Enter on word inputs
+        const newWordInput = document.getElementById('newWordInput');
+        if (newWordInput) {
+            newWordInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleAction('addSingleWord');
+            });
+        }
+
+        const bulkInput = document.getElementById('bulkWordsInput');
+        if (bulkInput) {
+            bulkInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleAction('addBulkWords');
+            });
+        }
+    }
+
+    function handleAction(action) {
+        switch (action) {
+            case 'startListen':
+            case 'startDisappear':
+            case 'startScramble':
+                nextGameWord();
+                break;
+
+            case 'replay':
+                if (gameState.currentWord) speakWord(gameState.currentWord);
+                break;
+
+            case 'checkAnswer': {
+                const input = gameState.input.trim().toLowerCase();
+                if (!input || !gameState.currentWord) return;
+                if (input === gameState.currentWord) {
+                    gameState.feedback = { type: 'correct', text: getCorrectMessage() };
+                    recordAnswer(gameState.currentWord, true);
+                    render();
+                    setTimeout(() => nextGameWord(), 1200);
+                } else {
+                    gameState.feedback = { type: 'incorrect', text: `✕ It's spelled "${gameState.currentWord}"` };
+                    recordAnswer(gameState.currentWord, false);
+                    render();
+                    setTimeout(() => {
+                        gameState.feedback = null;
+                        nextGameWord();
+                    }, 2200);
+                }
+                break;
+            }
+
+            case 'skipWord':
+                gameState.feedback = null;
+                nextGameWord();
+                break;
+
+            case 'peekWord':
+                gameState.feedback = { type: 'info', text: `The word was: ${gameState.currentWord}` };
+                render();
+                setTimeout(() => {
+                    gameState.feedback = null;
+                    nextGameWord();
+                }, 2000);
+                break;
+
+            case 'clearScramble':
+                gameState.scrambleAnswer = new Array(gameState.currentWord.length).fill(null);
+                gameState.scrambleUsed = new Array(gameState.scrambleLetters.length).fill(false);
+                gameState.feedback = null;
+                render();
+                break;
+
+            case 'startSpeed':
+                startSpeedRound();
+                break;
+
+            case 'startTest':
+                startTest(state.words.map(w => w.word));
+                break;
+
+            case 'resetTest':
+                gameState.testActive = false;
+                gameState.testIndex = 0;
+                gameState.testAnswers = [];
+                render();
+                break;
+
+            case 'retestFailed': {
+                const failed = gameState.testAnswers.filter(a => !a.correct).map(a => a.word);
+                if (failed.length === 0) { handleAction('resetTest'); return; }
+                startTest(failed);
+                break;
+            }
+
+            case 'submitTest': {
+                const answer = gameState.input.trim().toLowerCase();
+                const word = gameState.testWords[gameState.testIndex];
+                gameState.testAnswers.push({ word, typed: answer, correct: answer === word });
+                if (answer === word) recordAnswer(word, true);
+                else recordAnswer(word, false);
+                gameState.testIndex++;
+                gameState.input = '';
+                if (gameState.testIndex < gameState.testWords.length) {
+                    render();
+                    setTimeout(() => speakWord(gameState.testWords[gameState.testIndex]), 400);
+                } else {
+                    render();
+                }
+                break;
+            }
+
+            case 'skipTest': {
+                const word = gameState.testWords[gameState.testIndex];
+                gameState.testAnswers.push({ word, typed: '', correct: false });
+                gameState.testIndex++;
+                gameState.input = '';
+                if (gameState.testIndex < gameState.testWords.length) {
+                    render();
+                    setTimeout(() => speakWord(gameState.testWords[gameState.testIndex]), 400);
+                } else {
+                    render();
+                }
+                break;
+            }
+
+            case 'addSingleWord': {
+                const wordEl = document.getElementById('newWordInput');
+                const defEl = document.getElementById('newDefInput');
+                const sentEl = document.getElementById('newSentInput');
+                if (addWord(wordEl.value, defEl?.value, sentEl?.value)) {
+                    render();
+                } else {
+                    wordEl.style.borderColor = 'var(--danger)';
+                    setTimeout(() => wordEl.style.borderColor = '', 1000);
+                }
+                break;
+            }
+
+            case 'addBulkWords': {
+                const el = document.getElementById('bulkWordsInput');
+                const words = el.value.split(/[,\n]+/).map(w => w.trim()).filter(Boolean);
+                words.forEach(w => addWord(w));
+                render();
+                break;
+            }
+
+            case 'saveWeekLabel':
+                state.weekLabel = document.getElementById('weekLabelInput').value.trim();
+                save();
+                render();
+                break;
+
+            case 'clearAllWords':
+                if (confirm('Remove all words? This will also reset progress.')) {
+                    state.words = [];
+                    state.mastery = {};
+                    state.totalCorrect = 0;
+                    state.totalAttempts = 0;
+                    save();
+                    render();
+                }
+                break;
+
+            case 'resetMastery':
+                if (confirm('Reset all mastery progress? Words will be kept.')) {
+                    state.words.forEach(w => {
+                        state.mastery[w.word] = { correct: 0, attempts: 0, streak: 0, lastSeen: 0 };
+                    });
+                    state.totalCorrect = 0;
+                    state.totalAttempts = 0;
+                    save();
+                    render();
+                }
+                break;
+
+            case 'learnPrev':
+                gameState.learnIndex = Math.max(0, gameState.learnIndex - 1);
+                render();
+                break;
+
+            case 'learnNext':
+                gameState.learnIndex++;
+                if (gameState.learnIndex >= state.words.length) gameState.learnIndex = 0;
+                render();
+                break;
+
+            case 'speakLearn': {
+                const w = state.words[gameState.learnIndex % state.words.length];
+                speakWord(w.word);
+                break;
+            }
+
+            case 'speakSentenceLearn': {
+                const w = state.words[gameState.learnIndex % state.words.length];
+                if (w.sentence) speakSentence(w.sentence);
+                else speakWord(w.word);
+                break;
+            }
+        }
+    }
+
+    // ---- Game Flow ----
+    function nextGameWord() {
+        stopAllTimers();
+        const wordObj = pickWord();
+        if (!wordObj) return;
+
+        gameState.currentWord = wordObj.word;
+        gameState.currentWordObj = wordObj;
+        gameState.input = '';
+        gameState.feedback = null;
+
+        if (gameState.mode === 'scramble') {
+            initScramble(wordObj.word);
+        }
+
+        if (gameState.mode === 'disappear') {
+            gameState.disappearPhase = 'showing';
+            render();
+            // Show word for 2 seconds, then countdown, then hide
+            gameState.disappearTimer = setTimeout(() => {
+                gameState.disappearPhase = 'countdown';
+                render();
+                let count = 3;
+                const countEl = document.getElementById('countdownNum');
+                if (countEl) countEl.textContent = count;
+
+                const interval = setInterval(() => {
+                    count--;
+                    const el = document.getElementById('countdownNum');
+                    if (el) el.textContent = count > 0 ? count : '';
+                    if (count <= 0) {
+                        clearInterval(interval);
+                        gameState.disappearPhase = 'hidden';
+                        render();
+                    }
+                }, 600);
+                gameState._countdownInterval = interval;
+            }, 2000);
+        } else {
+            render();
+        }
+
+        // Speak the word in listen & speed modes
+        if (gameState.mode === 'listen' || gameState.mode === 'speed') {
+            setTimeout(() => speakWord(wordObj.word), 300);
+        }
+        if (gameState.mode === 'scramble') {
+            setTimeout(() => speakWord(wordObj.word), 300);
+        }
+    }
+
+    function startSpeedRound() {
+        gameState.gameActive = true;
+        gameState.speedTimeLeft = 60;
+        gameState.speedScore = 0;
+        gameState.speedTotal = 0;
+        gameState.feedback = null;
+
+        nextGameWord();
+
+        gameState.speedTimer = setInterval(() => {
+            gameState.speedTimeLeft--;
+            if (gameState.speedTimeLeft <= 0) {
+                clearInterval(gameState.speedTimer);
+                gameState.gameActive = false;
+                gameState.speedTotal = 1; // flag to show results
+                render();
+            } else {
+                // Update timer display without full re-render
+                const fill = document.querySelector('.timer-bar-fill');
+                const label = document.querySelector('.timer-label');
+                if (fill) {
+                    const pct = (gameState.speedTimeLeft / 60) * 100;
+                    fill.style.width = pct + '%';
+                    if (pct < 25) fill.classList.add('danger');
+                }
+                if (label) label.textContent = `${gameState.speedTimeLeft}s · ${gameState.speedScore} correct`;
+            }
+        }, 1000);
+    }
+
+    function startTest(words) {
+        gameState.testActive = true;
+        gameState.testWords = shuffleArray(words);
+        gameState.testIndex = 0;
+        gameState.testAnswers = [];
+        gameState.input = '';
+        render();
+        setTimeout(() => speakWord(gameState.testWords[0]), 500);
+    }
+
+    function stopAllTimers() {
+        if (gameState.speedTimer) { clearInterval(gameState.speedTimer); gameState.speedTimer = null; }
+        if (gameState.disappearTimer) { clearTimeout(gameState.disappearTimer); gameState.disappearTimer = null; }
+        if (gameState._countdownInterval) { clearInterval(gameState._countdownInterval); gameState._countdownInterval = null; }
+    }
+
+    function getCorrectMessage() {
+        const msgs = [
+            '✓ Nailed it!', '✓ Perfect!', '✓ Spot on!', '✓ Brilliant!',
+            '✓ You got it!', '✓ Top marks!', '✓ Well done!', '✓ Superb!'
+        ];
+        const m = getMastery(gameState.currentWord);
+        if (m.correct >= 3) return '🏆 Mastered!';
+        if (m.correct === 2) return '✓ One more to master!';
+        return msgs[Math.floor(Math.random() * msgs.length)];
+    }
+
+    // ---- Pre-loaded words ----
+    function preloadWords() {
+        if (state.words.length > 0) return; // Don't overwrite existing words
+
+        state.weekLabel = 'Suffixes: -cian, -sion, -tion';
+
+        const wordList = [
+            // -cian
+            { word: 'magician', definition: 'A person who performs magic tricks', sentence: 'The magician pulled a rabbit out of his hat.' },
+            { word: 'politician', definition: 'A person involved in politics or government', sentence: 'The politician gave a speech about new school funding.' },
+            { word: 'electrician', definition: 'A person who installs and repairs electrical wiring', sentence: 'We called an electrician to fix the broken light switch.' },
+            // -sion (base word ends in d/de or s/se)
+            { word: 'extension', definition: 'The act of making something longer or bigger', sentence: 'The school got a new extension with extra classrooms.' },
+            { word: 'collision', definition: 'When two things crash into each other', sentence: 'There was a collision between two cars on the motorway.' },
+            { word: 'exclusion', definition: 'The act of leaving someone or something out', sentence: 'The exclusion of certain foods helped his allergy.' },
+            { word: 'explosion', definition: 'A sudden, violent burst of energy', sentence: 'The explosion of the firework lit up the sky.' },
+            { word: 'confusion', definition: 'A state of not understanding something', sentence: 'There was confusion about which classroom to go to.' },
+            { word: 'mansion', definition: 'A very large, grand house', sentence: 'The old mansion had over twenty bedrooms.' },
+            // -ssion (clear soft /sh/ sound)
+            { word: 'profession', definition: 'A job that requires special training or education', sentence: 'Teaching is a very rewarding profession.' },
+            { word: 'session', definition: 'A period of time used for a particular activity', sentence: 'We had a long session of maths revision.' },
+            { word: 'percussion', definition: 'Musical instruments played by hitting or shaking', sentence: 'The drums and tambourines are part of the percussion section.' },
+            { word: 'discussion', definition: 'A conversation about a particular topic', sentence: 'We had a class discussion about climate change.' },
+            { word: 'passion', definition: 'A very strong feeling or enthusiasm for something', sentence: 'She has a real passion for painting.' },
+            { word: 'possession', definition: 'Something that you own', sentence: 'His most prized possession was his grandfather\'s watch.' },
+            // -tion (most common ending)
+            { word: 'fiction', definition: 'Stories that are made up and not real', sentence: 'Harry Potter is a famous work of fiction.' },
+            { word: 'direction', definition: 'The way something or someone is moving or facing', sentence: 'They walked in the direction of the park.' },
+            { word: 'attention', definition: 'The act of concentrating on something', sentence: 'Please pay attention during the lesson.' },
+            { word: 'proportion', definition: 'The amount of something compared to the whole', sentence: 'A large proportion of the class passed the test.' },
+            // -ation
+            { word: 'nation', definition: 'A country with its own government and people', sentence: 'England is a nation with a long history.' },
+            { word: 'station', definition: 'A place where trains or buses stop', sentence: 'We waited at the station for the next train.' },
+            { word: 'education', definition: 'The process of learning and gaining knowledge', sentence: 'A good education helps you in many ways.' },
+            { word: 'demonstration', definition: 'A showing of how something works', sentence: 'The teacher gave a demonstration of the science experiment.' },
+            // -etion
+            { word: 'completion', definition: 'The act of finishing something', sentence: 'The completion of the project took three weeks.' },
+            { word: 'deletion', definition: 'The act of removing or erasing something', sentence: 'The deletion of the file was an accident.' },
+            // -ition
+            { word: 'repetition', definition: 'Doing or saying something again and again', sentence: 'Repetition helps you remember your spellings.' },
+            { word: 'competition', definition: 'A contest where people try to win', sentence: 'She entered a spelling competition at school.' },
+            { word: 'opposition', definition: 'People or forces that are against something', sentence: 'The opposition team played really well.' },
+            { word: 'position', definition: 'The place where something or someone is', sentence: 'He changed his position to get a better view.' },
+            { word: 'petition', definition: 'A formal written request signed by many people', sentence: 'The children wrote a petition for longer break times.' },
+            { word: 'intuition', definition: 'A feeling of knowing something without proof', sentence: 'Her intuition told her something was wrong.' },
+            // -otion
+            { word: 'motion', definition: 'The act of moving', sentence: 'The motion of the waves rocked the boat gently.' },
+            { word: 'lotion', definition: 'A liquid cream put on skin', sentence: 'She applied sun lotion before going to the beach.' },
+            { word: 'devotion', definition: 'Strong love or loyalty to someone or something', sentence: 'His devotion to his family was clear to everyone.' },
+            { word: 'promotion', definition: 'Moving up to a higher position or rank', sentence: 'Mum got a promotion at work and was very happy.' },
+            { word: 'emotion', definition: 'A strong feeling such as happiness or sadness', sentence: 'Joy is a positive emotion that makes you smile.' },
+            // -ution
+            { word: 'distribution', definition: 'The act of sharing or spreading things out', sentence: 'The distribution of books happened at the start of term.' },
+            { word: 'revolution', definition: 'A big change or a complete turn around', sentence: 'The industrial revolution changed how people worked.' },
+            { word: 'contribution', definition: 'Something given to help achieve a result', sentence: 'Every child made a contribution to the school charity.' }
+        ];
+
+        wordList.forEach(w => {
+            state.words.push(w);
+            state.mastery[w.word] = { correct: 0, attempts: 0, streak: 0, lastSeen: 0 };
+        });
+
+        save();
+    }
+
+    // ---- Init ----
+    load();
+    preloadWords();
+    render();
+
+    </script>
+</body>
+</html>
